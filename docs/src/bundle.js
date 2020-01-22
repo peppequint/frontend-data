@@ -97148,7 +97148,7 @@ module.exports=[
 ]
 },{}],2:[function(require,module,exports){
 const d3 = require("d3");
-const data = require("../../data/data-oba.json");
+const data = require("../../data/data.json");
 
 const obaData = d3
   .nest()
@@ -97205,10 +97205,8 @@ rectBars
   .attr("width", xScale.bandwidth());
 
 rectBars.on("mouseenter", function(value, i) {
-  // d3.selectAll(".bar").attr("fill", "red");
   d3.select(this)
     .append("text")
-    .attr("fill", "red")
     .attr("x", v => xScale(v.key) + 10)
     .attr("y", v => yScale(v.value) - 10)
     .attr("text-anchor", "middle")
@@ -97236,7 +97234,7 @@ svg
   .attr("text-anchor", "middle")
   .text("Jaren");
 
-},{"../../data/data-oba.json":1,"d3":34}],3:[function(require,module,exports){
+},{"../../data/data.json":1,"d3":34}],3:[function(require,module,exports){
 // https://d3js.org/d3-array/ v1.2.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :

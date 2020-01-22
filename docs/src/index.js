@@ -1,5 +1,5 @@
 const d3 = require("d3");
-const data = require("../../data/data-oba.json");
+const data = require("../../data/data.json");
 
 const obaData = d3
   .nest()

@@ -1,4 +1,3 @@
-const OBAWrapper = require("node-oba-api-wrapper");
 const fs = require("fs");
 require("dotenv").config();
 
