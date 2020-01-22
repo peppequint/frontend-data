@@ -1,0 +1,25 @@
+{
+  "name": "fp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify docs/src/index.js > docs/src/bundle.js",
+    "data": "node index.js",
+    "start": "npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "^16.2.3",
+    "d3": "^5.7.0",
+    "dotenv": "^6.1.0",
+    "node-oba-api-wrapper": "github:maanlamp/node-oba-api-wrapper",
+    "oba-api": "github:rijkvanzanten/node-oba-api"
+  },
+  "devDependencies": {
+    "prettier": "^1.15.2"
+  }
+}
