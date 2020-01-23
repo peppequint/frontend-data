@@ -1,86 +1,125 @@
-const d3 = require("d3");
-const data = require("../../data/data.json");
+const d3 = require('d3');
+let data = require('../../data/data.json');
 
-const obaData = d3
-  .nest()
-  .key(d => d.year)
-  .rollup(d => d.length)
-  .entries(data)
-  .filter(y => y.key > 1909 && y.key < 1951);
+const select = ['Overall', 'During World War I', 'Post World War I', 'During World War II', 'Post World War II'];
 
-const margin = 60;
-const height = 600 - 2 * margin;
-const width = 1240 - 2 * margin;
+const margin = 30;
+const height = 920 - margin;
+const width = 1420 - margin;
 
 const svg = d3
-  .select("body")
-  .append("svg")
-  .attr("width", 1240)
-  .attr("height", 600);
+  .select('.container')
+  .append('svg')
+  .attr('height', height)
+  .attr('width', width);
 
-const barChart = svg
-  .append("g")
-  .attr("transform", `translate(${margin + 20}, ${margin})`);
+const graph = svg
+  .append('g')
+  .attr('transform', `translate(${margin}, 0)`)
+  .attr('class', 'graph');
 
-const yScale = d3
-  .scaleLinear()
-  .range([height, 0])
-  .domain([0, 150]);
+const x = d3.scaleBand().padding(0.2);
+const y = d3.scaleLinear();
 
-barChart.append("g").call(d3.axisLeft(yScale));
+const createVisualisation = () => {
+  data = transform(data);
 
-const xScale = d3
-  .scaleBand()
-  .range([0, width])
-  .domain(obaData.map(d => d.key))
-  .padding(0.2);
+  data.sort(sort);
 
-barChart
-  .append("g")
-  .attr("transform", `translate(0, ${height})`)
-  .call(d3.axisBottom(xScale));
+  options();
+  scales();
+  axis();
+  draw();
+};
 
-const rectBars = barChart
-  .selectAll()
-  .data(obaData)
-  .enter()
-  .append("g");
+const transform = () => {
+  return d3
+    .nest()
+    .key(d => d.year)
+    .rollup(d => d.length)
+    .entries(data)
+    .filter(y => y.key > 1909 && y.key < 1951);
+};
 
-rectBars
-  .append("rect")
-  .attr("class", "bar")
-  .attr("x", data => xScale(data.key))
-  .attr("y", data => yScale(data.value))
-  .attr("ry", 5)
-  .attr("height", data => height - yScale(data.value))
-  .attr("width", xScale.bandwidth());
+// https://www.sitepoint.com/sort-an-array-of-objects-in-javascript/
+const sort = (a, b) => {
+  const compareA = a.key;
+  const compareB = b.key;
 
-rectBars.on("mouseenter", function(value, i) {
-  d3.select(this)
-    .append("text")
-    .attr("x", v => xScale(v.key) + 10)
-    .attr("y", v => yScale(v.value) - 10)
-    .attr("text-anchor", "middle")
-    .text(v => `${v.value}`);
-});
+  let comparison = 0;
 
-rectBars.on("mouseleave", function() {
-  d3.select(this)
-    .select("text")
-    .remove();
-});
+  if (compareA > compareB) {
+    comparison = 1;
+  } else if (compareA < compareB) {
+    comparison = -1;
+  }
 
-svg
-  .append("text")
-  .attr("x", -(height / 2) - margin)
-  .attr("y", margin / 2)
-  .attr("transform", "rotate(-90)")
-  .attr("text-anchor", "middle")
-  .text("Aantal boeken");
+  return comparison;
+};
 
-svg
-  .append("text")
-  .attr("x", width / 2 + margin)
-  .attr("y", margin * 10 - 10)
-  .attr("text-anchor", "middle")
-  .text("Jaren");
+const scales = () => {
+  let max = d3.max(data, d => +d.value);
+
+  x.range([0, width - 20]).domain(data.map(d => d.key));
+  y.range([height, 0]).domain([0, max + 20]);
+};
+
+const axis = () => {
+  // y
+  graph
+    .append('g')
+    .attr('class', 'y-axis')
+    .call(d3.axisLeft(y));
+
+  // x
+  graph
+    .append('g')
+    .attr('class', 'x-axis')
+    .attr('transform', `translate(0, ${height})`)
+    .call(d3.axisBottom(x));
+
+  graph
+    .append('text')
+    .attr('x', -(height / 2) - margin)
+    .attr('y', '0')
+    .attr('transform', 'rotate(-90)')
+    .text('Aantal');
+
+  graph
+    .append('text')
+    .attr('x', width / 2 + margin)
+    .attr('y', margin * 10 * 3)
+    .text('Jaren');
+};
+
+const draw = () => {
+  const bars = graph
+    .selectAll()
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr('class', 'bars')
+    .attr('x', d => x(d.key))
+    .attr('y', d => y(d.value)) // var options in array after value
+    .attr('width', x.bandwidth())
+    .attr('height', d => height - y(d.value)); // var options in array after value
+};
+
+const options = () => {
+  const form = d3
+    .select('form')
+    .append('select')
+    .on('change', changeOption)
+    .selectAll('option')
+    .data(select)
+    .enter()
+    .append('option')
+    .attr('value', d => d)
+    .text(d => d);
+};
+
+function changeOption() {
+  console.log(this.value);
+}
+
+createVisualisation();
