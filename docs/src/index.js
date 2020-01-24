@@ -23,13 +23,9 @@ const y = d3.scaleLinear();
 
 const createVisualisation = () => {
   data = transform(data);
-
   data.sort(sort);
-
   options();
-  scales();
-  axis();
-  draw();
+  scales(data);
 };
 
 const transform = () => {
@@ -57,54 +53,6 @@ const sort = (a, b) => {
   return comparison;
 };
 
-const scales = () => {
-  let max = d3.max(data, d => +d.value);
-
-  x.range([0, width - 20]).domain(data.map(d => d.key));
-  y.range([height, 0]).domain([0, max + 20]);
-};
-
-const axis = () => {
-  // y
-  graph
-    .append('g')
-    .attr('class', 'y-axis')
-    .call(d3.axisLeft(y));
-
-  // x
-  graph
-    .append('g')
-    .attr('class', 'x-axis')
-    .attr('transform', `translate(0, ${height})`)
-    .call(d3.axisBottom(x));
-
-  graph
-    .append('text')
-    .attr('x', -(height / 2) - margin)
-    .attr('y', '0')
-    .attr('transform', 'rotate(-90)')
-    .text('Aantal');
-
-  graph
-    .append('text')
-    .attr('x', width / 2 + margin)
-    .attr('y', margin * 10 * 3)
-    .text('Jaren');
-};
-
-const draw = () => {
-  const bars = graph
-    .selectAll()
-    .data(data)
-    .enter()
-    .append('rect')
-    .attr('class', 'bars')
-    .attr('x', d => x(d.key))
-    .attr('y', d => y(d.value)) // var options in array after value
-    .attr('width', x.bandwidth())
-    .attr('height', d => height - y(d.value)); // var options in array after value
-};
-
 const options = () => {
   const form = d3
     .select('form')
@@ -118,8 +66,75 @@ const options = () => {
     .text(d => d);
 };
 
+const scales = data => {
+  let max = d3.max(data, d => +d.value);
+
+  x.range([0, width - 20]).domain(data.map(d => d.key));
+  y.range([height, 0]).domain([0, max + 20]);
+  axis(data);
+};
+
+const axis = data => {
+  // y
+  graph
+    .append('g')
+    .attr('class', 'y-axis')
+    .call(d3.axisLeft(y));
+
+  // x
+  graph
+    .append('g')
+    .attr('class', 'x-axis')
+    .attr('transform', `translate(0, ${height})`)
+    .call(d3.axisBottom(x))
+
+  graph
+    .append('text')
+    .attr('x', -(height / 2) - margin)
+    .attr('y', '0')
+    .attr('transform', 'rotate(-90)')
+    .text('Aantal');
+
+  graph
+    .append('text')
+    .attr('x', width / 2 + margin)
+    .attr('y', margin * 10 * 3)
+    .text('Jaren');
+
+  draw(data);
+};
+
+const draw = data => {
+  const bars = graph
+    .selectAll()
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr('href', d => d.key)
+    .attr('class', 'bars')
+    .attr('x', d => x(d.key))
+    .attr('y', d => y(d.value))
+    .attr('width', x.bandwidth())
+    .attr('height', d => height - y(d.value));
+};
+
 function changeOption() {
-  console.log(this.value);
+  if (this.value == 'Overall') {
+    let selected = data.filter(y => y.key > 1910 && y.key < 1951);
+    scales(selected);
+  } else if (this.value == 'Post World War II') {
+    let selected = data.filter(y => y.key > 1945 && y.key < 1951);
+    scales(selected);
+  } else if (this.value == 'During World War II') {
+    let selected = data.filter(y => y.key > 1938 && y.key < 1946);
+    scales(selected);
+  } else if (this.value == 'Post World War I') {
+    let selected = data.filter(y => y.key > 1918 && y.key < 1939);
+    scales(selected);
+  } else if (this.value == 'During World War I') {
+    let selected = data.filter(y => y.key > 1913 && y.key < 1919);
+    scales(selected);
+  }
 }
 
 createVisualisation();
