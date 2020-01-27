@@ -1,24 +1,55 @@
 * {
   box-sizing: border-box;
-  font-family: "Source Code Pro", monospace;
+  font-family: system-ui;
   margin: 0;
   padding: 0;
 }
 
 body {
+  background-color: #f6fafc;
   height: 100vh;
   width: 100vw;
 }
 
-.container {
-  text-align: center;
+svg {
+  height: 960px;
+  width: 1480px;
 }
 
-svg {
-  height: 920px;
-  width: 1420px;
+.container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding-top: 25px;
 }
 
 .x-axis > g > text {
-  transform: rotate(-45deg) translate(-10px, 0px);
+  transform: rotate(-45deg) translate(-20px, 0px);
+}
+
+.rect-bar {
+  fill: #FF8C9C;
+}
+
+.rect-bar:hover {
+  fill: #ED5F73;
+  transition: .2s ease-in;
+}
+
+.domain {
+ stroke:#C9D8E8;
+}
+
+.tick > text {
+  fill: #8792A0;
+}
+
+.tick > line {
+  stroke: #C9D8E8;
+}
+
+.tooltip-value {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #8792A0;
 }

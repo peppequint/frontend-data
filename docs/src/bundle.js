@@ -97150,6 +97150,31 @@ module.exports=[
 const d3 = require('d3');
 let data = require('../../data/data.json');
 
+// const transform = () => {
+//   return d3
+//     .nest()
+//     .key(d => d.year)
+//     .rollup(d => d)
+//     .entries(data);
+// };
+
+// let benk;
+// let year = transform();
+
+// year.map(d => {
+//   if (d.key == '1927') {
+//     benk = d;
+//   }
+// });
+
+// let total = benk.value;
+
+// let string =[];
+
+// total.map(d => string.push(d.title));
+
+// console.log(string);
+
 const select = ['Overall', 'During World War I', 'Post World War I', 'During World War II', 'Post World War II'];
 
 const margin = 30;
@@ -97164,7 +97189,7 @@ const svg = d3
 
 const graph = svg
   .append('g')
-  .attr('transform', `translate(${margin}, 0)`)
+  .attr('transform', `translate(${margin + 30}, 0)`)
   .attr('class', 'graph');
 
 const x = d3.scaleBand().padding(0.2);
@@ -97172,7 +97197,9 @@ const y = d3.scaleLinear();
 
 const createVisualisation = () => {
   data = transform(data);
-  data.sort(sort);
+
+  data.sort((a, b) => d3.ascending(a.key, b.key));
+
   options();
   scales(data);
 };
@@ -97187,20 +97214,20 @@ const transform = () => {
 };
 
 // https://www.sitepoint.com/sort-an-array-of-objects-in-javascript/
-const sort = (a, b) => {
-  const compareA = a.key;
-  const compareB = b.key;
+// const sort = (a, b) => {
+//   const compareA = a.key;
+//   const compareB = b.key;
 
-  let comparison = 0;
+//   let comparison = 0;
 
-  if (compareA > compareB) {
-    comparison = 1;
-  } else if (compareA < compareB) {
-    comparison = -1;
-  }
+//   if (compareA > compareB) {
+//     comparison = 1;
+//   } else if (compareA < compareB) {
+//     comparison = -1;
+//   }
 
-  return comparison;
-};
+//   return comparison;
+// };
 
 const options = () => {
   const form = d3
@@ -97235,19 +97262,19 @@ const axis = data => {
     .append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${height})`)
-    .call(d3.axisBottom(x))
+    .call(d3.axisBottom(x));
 
   graph
     .append('text')
     .attr('x', -(height / 2) - margin)
-    .attr('y', '0')
+    .attr('y', '-40')
     .attr('transform', 'rotate(-90)')
     .text('Aantal');
 
   graph
     .append('text')
     .attr('x', width / 2 + margin)
-    .attr('y', margin * 10 * 3)
+    .attr('y', margin * 10.5 * 3)
     .text('Jaren');
 
   draw(data);
@@ -97258,13 +97285,34 @@ const draw = data => {
     .selectAll()
     .data(data)
     .enter()
+    .append('g')
+    .attr('class', 'bars');
+
+  bars
     .append('rect')
-    .attr('href', d => d.key)
-    .attr('class', 'bars')
+    .attr('class', 'rect-bar')
     .attr('x', d => x(d.key))
     .attr('y', d => y(d.value))
     .attr('width', x.bandwidth())
     .attr('height', d => height - y(d.value));
+
+  bars.on('mouseenter', function(value) {
+    d3.select(this)
+      .append('text')
+      .attr('x', v => x(v.key) + 13)
+      .attr('y', v => y(v.value) - 13)
+      .attr('text-anchor', 'middle')
+      .text(v => `${v.value}`)
+      .attr('class', 'tooltip-value')
+      .transition()
+      .duration(200);
+  });
+
+  bars.on('mouseleave', function() {
+    d3.select(this)
+      .select('text')
+      .remove();
+  });
 };
 
 function changeOption() {
