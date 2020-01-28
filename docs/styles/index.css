@@ -8,19 +8,50 @@
 body {
   background-color: #f6fafc;
   height: 100vh;
+  letter-spacing: 1px;
   width: 100vw;
 }
 
-svg {
-  height: 960px;
-  width: 1480px;
+svg:nth-child(1) {
+  height: 860px;
+  width: 1080px;
+}
+
+svg:nth-child(2) {
+  align-self: center;
+}
+
+.header {
+  display: flex;
+color: #8792a0;
+  flex-direction: column;
+  height: 15%;
+  padding: 1% 4%;
+}
+
+.header > h1 {
+  font-weight: 200;
+}
+
+.header > span {
+  font-weight: 500;
+  padding-top: 10px;
 }
 
 .container {
-  align-items: center;
+  align-items: flex-end;
   display: flex;
-  justify-content: center;
-  padding-top: 25px;
+  height: 85%;
+  justify-content: flex-start;
+  padding: 1%;
+}
+
+.select-form {
+  margin-top: auto;
+}
+
+.graph > text {
+  fill: #8792a0;
 }
 
 .x-axis > g > text {
@@ -28,28 +59,28 @@ svg {
 }
 
 .rect-bar {
-  fill: #FF8C9C;
+  fill: #ff8c9c;
 }
 
 .rect-bar:hover {
-  fill: #ED5F73;
-  transition: .2s ease-in;
+  fill: #ed5f73;
+  transition: 0.2s ease-in;
 }
 
 .domain {
- stroke:#C9D8E8;
+  stroke: #c9d8e8;
 }
 
 .tick > text {
-  fill: #8792A0;
+  fill: #c9d8e8;
 }
 
 .tick > line {
-  stroke: #C9D8E8;
+  stroke: #c9d8e8;
 }
 
 .tooltip-value {
   font-size: 14px;
   font-weight: bold;
-  fill: #8792A0;
+  fill: #8792a0;
 }
