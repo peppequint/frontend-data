@@ -97172,12 +97172,14 @@ const y = d3.scaleLinear();
 
 const t = d3.transition().duration(200);
 
+const yLine = () => d3.axisLeft().scale(y);
+
 const renderBarChart = () => {
   data = modifyData.barChart();
 
   data.sort((a, b) => d3.ascending(a.key, b.key));
 
-  options();
+  initOptions();
   scaleBarChart(data);
 };
 
@@ -97210,8 +97212,8 @@ const modifyData = {
   }
 };
 
-const options = () => {
-  const form = d3
+const initOptions = () => {
+  return d3
     .select('form')
     .append('select')
     .on('change', changeOption)
@@ -97247,6 +97249,15 @@ const axisBarChart = data => {
     .transition(t)
     .call(d3.axisBottom(x));
 
+  // graph
+  //   .append('g')
+  //   .attr('class', 'grid')
+  //   .call(
+  //     yLine()
+  //       .tickSize(-width, 0, 0)
+  //       .tickFormat('')
+  //   );
+
   graph
     .append('text')
     .attr('x', -(height / 2) - margin)
@@ -97270,17 +97281,22 @@ const drawBars = data => {
     .enter()
     .append('g')
     .attr('id', d => d.key)
-    .attr('class', 'bars');
-
-  bars
+    .attr('class', 'bars')
     .append('rect')
     .attr('class', 'rect-bar')
+    .attr('y', d => y(0))
+    .attr('height', 0)
+    .attr('fill', '#ed5f73')
+    .attr('opacity', '0.25');
+
+  bars
     .attr('x', d => x(d.key))
     .attr('width', x.bandwidth())
+    .transition(t)
     .attr('height', d => height - y(d.value))
-    .attr('y', d => y(d.value))
-    .attr('fill', '#ed5f73')
-    .attr('opacity', '0.25')
+    .attr('y', d => y(d.value));
+
+  bars
     .on('mouseover', function(d) {
       d3.select(this)
         .transition()
@@ -97292,24 +97308,19 @@ const drawBars = data => {
         .attr('opacity', '0.25');
     });
 
-  bars.on('mouseenter', function(value) {
-    d3.select(this)
-      .append('text')
-      .style('opacity', '0')
-      .attr('x', v => x(v.key) + 10)
-      .attr('y', v => y(v.value) - 10)
-      .attr('text-anchor', 'middle')
-      .text(v => `${v.value}`)
-      .transition(t)
-      .style('opacity', '1')
-      .attr('class', 'tooltip-value');
-  });
-
-  bars.on('mouseleave', function() {
-    d3.select(this)
-      .select('text')
-      .remove();
-  });
+  bars
+    .on('mouseenter', function(value) {
+      document.querySelector('.bar-chart--text').textContent = `In het jaar ${value.key} zijn er ${value.value} boeken gepubliceerd.`;
+      d3.select(this)
+        .transition(t)
+        .style('opacity', '1')
+        .attr('class', 'tooltip-value');
+    })
+    .on('mouseleave', function() {
+      d3.select(this)
+        .select('text')
+        .remove();
+    });
 };
 
 function changeOption() {
@@ -97343,7 +97354,7 @@ const labelOffset = fourth * 1.5;
 
 let dataDonut = {};
 
-function makeDonut(i) {
+function createDataDonut(i) {
   const transformData = () => {
     return d3
       .nest()
@@ -97381,7 +97392,7 @@ function makeDonut(i) {
   dataDonut = parseData;
 }
 
-makeDonut('1920');
+createDataDonut('1920');
 
 const radiusDonut = Math.min(widthDonut, heightDonut) / 2 - marginDonut;
 
@@ -97400,20 +97411,13 @@ const pie = d3.pie().value(d => d.value);
 
 const data_ready = pie(d3.entries(dataDonut));
 
-const arc = d3
-  .arc()
-  .innerRadius(125)
-  .outerRadius(radiusDonut);
-
-const arcLabel = d3
-  .arc()
-  .innerRadius(labelOffset)
-  .outerRadius(labelOffset);
-
-const arcHover = d3
-  .arc()
-  .innerRadius(100)
-  .outerRadius(radiusDonut + 20);
+// difference arc states
+function arc(inner, outer) {
+  return d3
+    .arc()
+    .innerRadius(inner)
+    .outerRadius(outer);
+}
 
 const parts = svgDonut
   .selectAll('.arc')
@@ -97424,26 +97428,26 @@ const parts = svgDonut
 
 parts
   .append('path')
-  .attr('d', arc)
+  .attr('d', arc(125, radiusDonut))
   .attr('fill', d => color(d.data.key))
-  .attr('opacity', '0.5')
+  .attr('opacity', '0.25')
   .on('mouseover', function(d) {
     d3.select(this)
       .transition()
-      .attr('d', arcHover)
+      .attr('d', arc(100, radiusDonut + 20))
       .attr('opacity', '1');
   })
   .on('mouseout', function(d) {
     d3.select(this)
       .transition()
-      .attr('d', arc)
-      .attr('opacity', '0.5');
+      .attr('d', arc(125, radiusDonut))
+      .attr('opacity', '0.25');
   });
 
 parts.on('mouseenter', function(value) {
   d3.select(this)
     .append('text')
-    .attr('transform', d => `translate(${arcLabel.centroid(d)})`)
+    .attr('transform', d => `translate(${arc(labelOffset, labelOffset).centroid(d)})`)
     .attr('y', -2)
     .attr('x', -2)
     .style('alignment-baseline', 'middle')
