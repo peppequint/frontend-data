@@ -6,7 +6,7 @@ const select = ['Overall', 'During World War I', 'Post World War I', 'During Wor
 const margin = 30;
 const height = 800 - margin;
 const width = 1000 - margin;
-  
+
 let svg = d3
   .select('.container')
   .append('svg')
@@ -120,6 +120,7 @@ const drawBars = data => {
     .data(data)
     .enter()
     .append('g')
+    .attr('id', d => d.key)
     .attr('class', 'bars');
 
   bars
@@ -128,14 +129,26 @@ const drawBars = data => {
     .attr('x', d => x(d.key))
     .attr('width', x.bandwidth())
     .attr('height', d => height - y(d.value))
-    .attr('y', d => y(d.value));
+    .attr('y', d => y(d.value))
+    .attr('fill', '#ed5f73')
+    .attr('opacity', '0.25')
+    .on('mouseover', function(d) {
+      d3.select(this)
+        .transition()
+        .attr('opacity', '1');
+    })
+    .on('mouseout', function(d) {
+      d3.select(this)
+        .transition()
+        .attr('opacity', '0.25');
+    });
 
   bars.on('mouseenter', function(value) {
     d3.select(this)
       .append('text')
       .style('opacity', '0')
-      .attr('x', v => x(v.key) + 13)
-      .attr('y', v => y(v.value) - 13)
+      .attr('x', v => x(v.key) + 10)
+      .attr('y', v => y(v.value) - 10)
       .attr('text-anchor', 'middle')
       .text(v => `${v.value}`)
       .transition(t)
@@ -172,9 +185,12 @@ function changeOption() {
   }
 }
 
-const widthDonut = 450;
-const heightDonut = 450;
+const widthDonut = 500;
+const heightDonut = 500;
 const marginDonut = 40;
+
+const fourth = widthDonut / 3;
+const labelOffset = fourth * 1.5;
 
 let dataDonut = {};
 
@@ -190,12 +206,11 @@ function makeDonut(i) {
   let string;
   let year = transformData();
 
-  year.map(data => {
-    if (data.key === i) {
-      string = data;
+  year.map(d => {
+    if (d.key == i) {
+      string = d;
     }
   });
-
   let total = string.value;
   let array = [];
 
@@ -214,12 +229,10 @@ function makeDonut(i) {
     parseData[letter] = amountLowerCase + amountUpperCase;
   });
 
-  console.log(parseData);
-
   dataDonut = parseData;
 }
 
-makeDonut('1930');
+makeDonut('1920');
 
 const radiusDonut = Math.min(widthDonut, heightDonut) / 2 - marginDonut;
 
@@ -229,30 +242,77 @@ let svgDonut = d3
   .attr('width', widthDonut)
   .attr('height', heightDonut)
   .append('g')
-  .attr('transform', `translate(${widthDonut / 2}, ${heightDonut / 2})`);
+  .attr('transform', `translate(${widthDonut / 2}, ${heightDonut / 2 + 50})`)
+  .attr('class', 'donut');
 
-const color = d3.scaleOrdinal(d3.schemePastel2).domain(dataDonut);
+const color = d3.scaleOrdinal(d3.schemePastel1).domain(dataDonut);
 
-const pie = d3
-  .pie()
-  .value(d => d.value)
+const pie = d3.pie().value(d => d.value);
 
-const data_ready = pie(d3.entries(dataDonut))
+const data_ready = pie(d3.entries(dataDonut));
 
-svgDonut
-  .selectAll()
+const arc = d3
+  .arc()
+  .innerRadius(125)
+  .outerRadius(radiusDonut);
+
+const arcLabel = d3
+  .arc()
+  .innerRadius(labelOffset)
+  .outerRadius(labelOffset);
+
+const arcHover = d3
+  .arc()
+  .innerRadius(100)
+  .outerRadius(radiusDonut + 20);
+
+const parts = svgDonut
+  .selectAll('.arc')
   .data(data_ready)
   .enter()
+  .append('g')
+  .attr('class', 'arc');
+
+parts
   .append('path')
-  .attr(
-    'd',
-    d3
-      .arc()
-      .innerRadius(125)
-      .outerRadius(radiusDonut)
-  )
+  .attr('d', arc)
   .attr('fill', d => color(d.data.key))
-  // .style('opacity', 0.7);
+  .attr('opacity', '0.5')
+  .on('mouseover', function(d) {
+    d3.select(this)
+      .transition()
+      .attr('d', arcHover)
+      .attr('opacity', '1');
+  })
+  .on('mouseout', function(d) {
+    d3.select(this)
+      .transition()
+      .attr('d', arc)
+      .attr('opacity', '0.5');
+  });
 
+parts.on('mouseenter', function(value) {
+  d3.select(this)
+    .append('text')
+    .attr('transform', d => `translate(${arcLabel.centroid(d)})`)
+    .attr('y', -2)
+    .attr('x', -2)
+    .style('alignment-baseline', 'middle')
+    .text(v => `${value.data.key}`)
+    .attr('class', 'tooltip-donut');
 
-  renderBarChart();
+  d3.select(this)
+    .append('text')
+    .attr('dy', '0em')
+    .attr('text-anchor', 'middle')
+    .text(v => `${value.data.value}x`)
+    .attr('class', 'tooltip-donut--letter');
+});
+
+parts.on('mouseleave', function(value) {
+  d3.select(this)
+    .selectAll('.tooltip-donut, .tooltip-donut--letter')
+    .remove();
+});
+
+renderBarChart();
