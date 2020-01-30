@@ -1,7 +1,8 @@
 <div align="center">
 	<h1 align='center'>Frontend Data</h1>
-	<img align='center' src="./docs/src/screen-rec.gif" width="720" />
+	<img align='center' src="./docs/src/screen-rec.gif" width="800" />
 </div>
+<br>
 <p align="center">
 	A data visualisation about published German books around the 2 world wars.
 	<br>
@@ -17,6 +18,7 @@
 - [Data](#data)
 - [D3](#d3)
 - [Sources](#sources)
+- [Credits](#credits)
 
 ## Install
 You must have [Node.js](https://nodejs.org/en/download/) installed on your computer to run this project. To install this project on your computer, please follow the steps below from your command line:
