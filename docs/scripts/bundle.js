@@ -97416,9 +97416,9 @@ const drawArcs = data => {
       .outerRadius(outer);
   };
 
+  // donutChart.selectAll('.arc').remove();
+
   const pie = d3.pie().value(d => d.value);
-  console.log(pie);
-  
   const arcs = pie(d3.entries(data));
 
   const arc = donutChart
@@ -97428,7 +97428,7 @@ const drawArcs = data => {
     .append('g')
     .attr('class', 'arc');
 
-  arc.remove();
+    arc.remove();
 
   arc
     .append('path')
