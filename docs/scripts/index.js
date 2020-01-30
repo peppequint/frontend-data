@@ -1,49 +1,31 @@
 const d3 = require('d3');
 let data = require('../../data/data.json');
+let dataDonut = {};
 
-const select = ['Overall', 'During World War I', 'Post World War I', 'During World War II', 'Post World War II'];
+// GENERAL VARIABLES
 
-const margin = 30;
-const height = 800 - margin;
-const width = 1000 - margin;
+const margin = 40;
 
-let svg = d3
-  .select('.container')
-  .append('svg')
-  .attr('height', height)
-  .attr('width', width);
-
-let graph = svg
-  .append('g')
-  .attr('transform', `translate(${margin + 30}, 0)`)
-  .attr('class', 'graph');
+const t = d3.transition().duration(200);
 
 const x = d3.scaleBand().padding(0.2);
 const y = d3.scaleLinear();
 
-const t = d3.transition().duration(200);
+const height = 800 - margin;
+const width = 1000 - margin;
 
-const yLine = () => d3.axisLeft().scale(y);
+const size = (width / 2) * 1.25;
 
-const renderBarChart = () => {
-  data = modifyData.barChart();
+const radius = Math.min(size, size) / 2 - margin;
 
-  data.sort((a, b) => d3.ascending(a.key, b.key));
+const color = d3.scaleOrdinal(d3.schemePastel1).domain(dataDonut);
 
-  initOptions();
-  scaleBarChart(data);
-};
+const third = size / 3;
+const label = third * 1.5;
 
-const updateBarChart = data => {
-  graph.remove();
-  graph = svg
-    .append('g')
-    .attr('transform', `translate(${margin + 30}, 0)`)
-    .attr('class', 'graph');
-  console.log(data);
+const horizontal = () => d3.axisLeft().scale(y);
 
-  scaleBarChart(data);
-};
+const select = ['Overall', 'During World War I', 'Post World War I', 'During World War II', 'Post World War II'];
 
 const modifyData = {
   barChart: () => {
@@ -63,6 +45,28 @@ const modifyData = {
   }
 };
 
+// BAR CHART
+
+const barChart = d3
+  .select('.container')
+  .append('svg')
+  .attr('height', height)
+  .attr('width', width);
+
+let graph = barChart
+  .append('g')
+  .attr('transform', `translate(${margin + 30}, 0)`)
+  .attr('class', 'graph');
+
+const renderBarChart = () => {
+  data = modifyData.barChart();
+
+  data.sort((a, b) => d3.ascending(a.key, b.key));
+
+  initOptions();
+  scaleBarChart(data);
+};
+
 const initOptions = () => {
   return d3
     .select('form')
@@ -79,8 +83,9 @@ const initOptions = () => {
 const scaleBarChart = data => {
   let max = d3.max(data, d => +d.value);
 
+  y.range([height, 0]).domain([0, max]);
   x.range([0, width - 20]).domain(data.map(d => d.key));
-  y.range([height, 0]).domain([0, max + 10]);
+
   axisBarChart(data);
 };
 
@@ -100,14 +105,15 @@ const axisBarChart = data => {
     .transition(t)
     .call(d3.axisBottom(x));
 
-  // graph
-  //   .append('g')
-  //   .attr('class', 'grid')
-  //   .call(
-  //     yLine()
-  //       .tickSize(-width, 0, 0)
-  //       .tickFormat('')
-  //   );
+  // horizontal lines
+  graph
+    .append('g')
+    .attr('class', 'grid')
+    .call(
+      horizontal()
+        .tickSize(-width + 19, 0, 0)
+        .tickFormat('')
+    );
 
   graph
     .append('text')
@@ -119,7 +125,8 @@ const axisBarChart = data => {
   graph
     .append('text')
     .attr('x', width / 2 + margin)
-    .attr('y', height + margin * 2)
+    .attr('y', height + margin * 1.5)
+    .attr('text-anchor', 'end')
     .text('Jaren');
 
   drawBars(data);
@@ -137,12 +144,12 @@ const drawBars = data => {
     .attr('class', 'rect-bar')
     .attr('y', d => y(0))
     .attr('height', 0)
+    .attr('x', d => x(d.key))
+    .attr('width', x.bandwidth())
     .attr('fill', '#ed5f73')
     .attr('opacity', '0.25');
 
   bars
-    .attr('x', d => x(d.key))
-    .attr('width', x.bandwidth())
     .transition(t)
     .attr('height', d => height - y(d.value))
     .attr('y', d => y(d.value));
@@ -172,12 +179,29 @@ const drawBars = data => {
         .select('text')
         .remove();
     });
+
+  // bars.on('click', function(value) {
+  //   renderDonutChart(value.key)
+
+  // })
+};
+
+const updateBarChart = data => {
+  graph.remove();
+
+  graph = barChart
+    .append('g')
+    .attr('transform', `translate(${margin + 30}, 0)`)
+    .attr('class', 'graph');
+  console.log(data);
+
+  scaleBarChart(data);
 };
 
 function changeOption() {
   switch (this.value) {
     case 'Overall':
-      updateBarChart(data.filter(y => y.key > 1910 && y.key < 1951));
+      updateBarChart(data.filter(y => y.key > 1909 && y.key < 1951));
       break;
     case 'Post World War II':
       updateBarChart(data.filter(y => y.key > 1945 && y.key < 1951));
@@ -196,16 +220,21 @@ function changeOption() {
   }
 }
 
-const widthDonut = 500;
-const heightDonut = 500;
-const marginDonut = 40;
+// DONUT CHART
 
-const fourth = widthDonut / 3;
-const labelOffset = fourth * 1.5;
+const donutChart = d3
+  .select('.container')
+  .append('svg')
+  .attr('width', size)
+  .attr('height', size)
+  .append('g')
+  .attr('transform', `translate(${size / 2 + 25}, ${size / 2 + 25})`)
+  .attr('class', 'donut');
 
-let dataDonut = {};
-
-function createDataDonut(i) {
+// modify data
+const renderDonutChart = selected => {
+  let specificYear;
+  // hier wat anders op verzinnen
   const transformData = () => {
     return d3
       .nest()
@@ -213,110 +242,91 @@ function createDataDonut(i) {
       .rollup(d => d)
       .entries(data);
   };
+  console.log(transformData());
 
-  let string;
-  let year = transformData();
-
-  year.map(d => {
-    if (d.key == i) {
-      string = d;
+  transformData().map(data => {
+    if (data.key === selected) {
+      specificYear = data;
     }
   });
-  let total = string.value;
-  let array = [];
 
-  total.map(d => array.push(d.title));
-  let dataString = array.join();
+  let stringOfTitles = [];
+
+  specificYear.value.map(d => stringOfTitles.push(d.title));
 
   const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-  const parseData = {};
 
   letters.forEach(letter => {
-    let uppercase = letter.toUpperCase();
+    let amountLowerCase = stringOfTitles.join().split(letter).length - 1;
+    let amountUpperCase = stringOfTitles.join().split(letter.toUpperCase()).length - 1;
 
-    let amountLowerCase = dataString.split(letter).length - 1;
-    let amountUpperCase = dataString.split(uppercase).length - 1;
-
-    parseData[letter] = amountLowerCase + amountUpperCase;
+    dataDonut[letter] = amountLowerCase + amountUpperCase;
   });
 
-  dataDonut = parseData;
-}
+  drawArcs(dataDonut);
+};
 
-createDataDonut('1920');
+const drawArcs = data => {
+  // difference arc states
+  const arcProps = (inner, outer) => {
+    return d3
+      .arc()
+      .innerRadius(inner)
+      .outerRadius(outer);
+  };
 
-const radiusDonut = Math.min(widthDonut, heightDonut) / 2 - marginDonut;
+  const pie = d3.pie().value(d => d.value);
+  const arcs = pie(d3.entries(data));
 
-let svgDonut = d3
-  .select('.container')
-  .append('svg')
-  .attr('width', widthDonut)
-  .attr('height', heightDonut)
-  .append('g')
-  .attr('transform', `translate(${widthDonut / 2}, ${heightDonut / 2 + 50})`)
-  .attr('class', 'donut');
+  const arc = donutChart
+    .selectAll('.arc')
+    .data(arcs)
+    .enter()
+    .append('g')
+    .attr('class', 'arc');
 
-const color = d3.scaleOrdinal(d3.schemePastel1).domain(dataDonut);
+  arc
+    .append('path')
+    .attr('d', arcProps(125, radius))
+    .attr('fill', d => color(d.data.key))
+    .attr('opacity', '0.25')
+    .on('mouseover', function(d) {
+      d3.select(this)
+        .transition()
+        .attr('d', arcProps(100, radius + 20))
+        .attr('opacity', '1');
+    })
+    .on('mouseout', function(d) {
+      d3.select(this)
+        .transition()
+        .attr('d', arcProps(125, radius))
+        .attr('opacity', '0.25');
+    });
 
-const pie = d3.pie().value(d => d.value);
-
-const data_ready = pie(d3.entries(dataDonut));
-
-// difference arc states
-function arc(inner, outer) {
-  return d3
-    .arc()
-    .innerRadius(inner)
-    .outerRadius(outer);
-}
-
-const parts = svgDonut
-  .selectAll('.arc')
-  .data(data_ready)
-  .enter()
-  .append('g')
-  .attr('class', 'arc');
-
-parts
-  .append('path')
-  .attr('d', arc(125, radiusDonut))
-  .attr('fill', d => color(d.data.key))
-  .attr('opacity', '0.25')
-  .on('mouseover', function(d) {
+  arc.on('mouseenter', function(value) {
     d3.select(this)
-      .transition()
-      .attr('d', arc(100, radiusDonut + 20))
-      .attr('opacity', '1');
-  })
-  .on('mouseout', function(d) {
+      .append('text')
+      .attr('transform', d => `translate(${arcProps(label, label).centroid(d)})`)
+      .attr('y', -2)
+      .attr('x', -2)
+      .style('alignment-baseline', 'middle')
+      .text(v => `${value.data.key}`)
+      .attr('class', 'tooltip-donut');
+
     d3.select(this)
-      .transition()
-      .attr('d', arc(125, radiusDonut))
-      .attr('opacity', '0.25');
+      .append('text')
+      .attr('dy', '0em')
+      .attr('text-anchor', 'middle')
+      .text(v => `${value.data.value}x`)
+      .attr('class', 'tooltip-donut--letter');
   });
 
-parts.on('mouseenter', function(value) {
-  d3.select(this)
-    .append('text')
-    .attr('transform', d => `translate(${arc(labelOffset, labelOffset).centroid(d)})`)
-    .attr('y', -2)
-    .attr('x', -2)
-    .style('alignment-baseline', 'middle')
-    .text(v => `${value.data.key}`)
-    .attr('class', 'tooltip-donut');
+  arc.on('mouseleave', function(value) {
+    d3.select(this)
+      .selectAll('.tooltip-donut, .tooltip-donut--letter')
+      .remove();
+  });
+};
 
-  d3.select(this)
-    .append('text')
-    .attr('dy', '0em')
-    .attr('text-anchor', 'middle')
-    .text(v => `${value.data.value}x`)
-    .attr('class', 'tooltip-donut--letter');
-});
-
-parts.on('mouseleave', function(value) {
-  d3.select(this)
-    .selectAll('.tooltip-donut, .tooltip-donut--letter')
-    .remove();
-});
-
+renderDonutChart('1915');
 renderBarChart();

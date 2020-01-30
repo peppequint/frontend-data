@@ -68,6 +68,10 @@ svg:nth-child(2) {
   height: 100%;
 }
 
+.grid {
+  opacity: 0.5;
+}
+
 .graph > text {
   fill: #8792a0;
 }
@@ -77,7 +81,7 @@ svg:nth-child(2) {
 }
 
 .bar-chart--text {
-font-weight: bolder;
+  font-weight: bolder;
   margin-top: 38px;
 }
 
