@@ -18,7 +18,7 @@ svg:nth-child(1) {
 }
 
 svg:nth-child(2) {
-  align-self: center;
+  align-self: flex-start;
   height: 650px;
   margin: 0 auto;
   width: 650px;
@@ -44,6 +44,8 @@ svg:nth-child(2) {
 }
 
 .header > div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
   padding-left: 450px;
 }
 
@@ -80,7 +82,7 @@ svg:nth-child(2) {
   cursor: pointer;
 }
 
-.bar-chart--text {
+.chart-text {
   font-weight: bolder;
   margin-top: 38px;
 }

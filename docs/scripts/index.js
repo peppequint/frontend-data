@@ -168,7 +168,7 @@ const drawBars = data => {
 
   bars
     .on('mouseenter', function(value) {
-      document.querySelector('.bar-chart--text').textContent = `In het jaar ${value.key} zijn er ${value.value} boeken gepubliceerd.`;
+      document.querySelectorAll('.chart-text')[0].textContent = `In het jaar ${value.key} zijn er ${value.value} boeken gepubliceerd.`;
       d3.select(this)
         .transition(t)
         .style('opacity', '1')
@@ -179,11 +179,10 @@ const drawBars = data => {
         .select('text')
         .remove();
     });
-
-  // bars.on('click', function(value) {
-  //   renderDonutChart(value.key)
-
-  // })
+  bars.on('click', function(value) {
+    document.querySelectorAll('.chart-text')[1].textContent = `Letters die in de titels zitten van het jaar ${value.key}.`;
+    drawArcs(modifyDataDonut(value.key));
+  });
 };
 
 const updateBarChart = data => {
@@ -193,7 +192,6 @@ const updateBarChart = data => {
     .append('g')
     .attr('transform', `translate(${margin + 30}, 0)`)
     .attr('class', 'graph');
-  console.log(data);
 
   scaleBarChart(data);
 };
@@ -231,29 +229,25 @@ const donutChart = d3
   .attr('transform', `translate(${size / 2 + 25}, ${size / 2 + 25})`)
   .attr('class', 'donut');
 
-// modify data
-const renderDonutChart = selected => {
-  let specificYear;
-  // hier wat anders op verzinnen
-  const transformData = () => {
-    return d3
-      .nest()
-      .key(d => d.year)
-      .rollup(d => d)
-      .entries(data);
-  };
-  console.log(transformData());
+const nestDonutData = () => {
+  return d3
+    .nest()
+    .key(d => d.year)
+    .rollup(d => d)
+    .entries(data);
+};
 
-  transformData().map(data => {
+const donutData = nestDonutData();
+
+const modifyDataDonut = selected => {
+  let arrayOfTitles = [];
+  donutData.map(data => {
     if (data.key === selected) {
-      specificYear = data;
+      arrayOfTitles.push(data.value);
     }
   });
 
-  let stringOfTitles = [];
-
-  specificYear.value.map(d => stringOfTitles.push(d.title));
-
+  let stringOfTitles = arrayOfTitles[0].map(e => e.title);
   const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
   letters.forEach(letter => {
@@ -262,12 +256,10 @@ const renderDonutChart = selected => {
 
     dataDonut[letter] = amountLowerCase + amountUpperCase;
   });
-
-  drawArcs(dataDonut);
+  return dataDonut;
 };
 
 const drawArcs = data => {
-  // difference arc states
   const arcProps = (inner, outer) => {
     return d3
       .arc()
@@ -285,11 +277,13 @@ const drawArcs = data => {
     .append('g')
     .attr('class', 'arc');
 
+  arc.remove();
+
   arc
     .append('path')
     .attr('d', arcProps(125, radius))
     .attr('fill', d => color(d.data.value))
-    .attr('opacity', '0.25')
+    .attr('opacity', '0.5')
     .on('mouseover', function(d) {
       d3.select(this)
         .transition()
@@ -300,7 +294,7 @@ const drawArcs = data => {
       d3.select(this)
         .transition()
         .attr('d', arcProps(125, radius))
-        .attr('opacity', '0.25');
+        .attr('opacity', '0.5');
     });
 
   arc.on('mouseenter', function(value) {
@@ -328,5 +322,4 @@ const drawArcs = data => {
   });
 };
 
-renderDonutChart('1915');
 renderBarChart();
