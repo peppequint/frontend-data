@@ -1,16 +1,17 @@
 <div align="center">
 	<h1 align='center'>Frontend Data</h1>
-	<!-- <img align='center' src="./public/src/img/screenshot-application.png" width="420" /> -->
+	<img align='center' src="./docs/src/screen-rec.gif" width="720" />
 </div>
 <p align="center">
 	A data visualisation about published German books around the 2 world wars.
 	<br>
-	<!-- <a href="https://browser-technologies-1819-pq.herokuapp.com/">Live demo</a> -->
+	<a href="https://peppequint.github.io/frontend-data/">Live demo</a>
 </p>
 <br>
 
 ## Table of contents
 - [Install](#install)
+- [Wiki](#wiki)
 - [Concept](#concept)
 - [API](#api)
 - [Data](#data)
@@ -34,92 +35,80 @@ npm install
 npm start
 ```
 
+## Wiki
+The documentations of this project can be found in the Wiki of this project. I try to explain what I did with the data of the public library of Amsterdam and how I used D3. Please, click the [link](https://github.com/peppequint/frontend-data/wiki) for details about this project.
+
 ## Concept
-This concept is about the number of German books that has been published, specifically in the 20th century. The data of the public library of Amsterdam is used in this concept. With this data I created a visualisation to answer a few questions. You can read more about the concept in the documentation (LINK WIKI).
+This concept is about the number of German books that has been published, specifically in the 20th century. The data of the public library of Amsterdam is used in this concept. With this data I created a visualisation to answer a few questions I asked myself. You can read more about the concept in the [documentation](https://github.com/peppequint/frontend-data/wiki/Concept).
 
 ## API
-The OBA was so kind to let us use their API to fetch data. Unfortunately, the keys of the API doesn't work anymore. However, I do have a JSON file with the data of the OBA. I modified the request to get the specific data that I wanted.
+The OBA was so kind to let us use their API to fetch data. Unfortunately, the API isn't working anymore. It was a temporary key they gave to the students. However, I do have a JSON file with the data of the OBA. I modified the request to get the specific data that I wanted.
 
 ``` javascript
+const public_key = process.env.DB_PUBLIC;
+const secret_key = process.env.DB_SECRET;
+
+const client = new OBAWrapper({
+  public: public_key,
+  secret: secret_key
+});
+
 client
   .get("search", {
-    q: "buch", // only get the books
-    sort: "year", // sorted at publication year
+    q: "buch",
+    sort: "year",
     refine: true,
-    facet: ["type(book)", "language(ger)"], // only get books that are written in German
-    count: 19429, // max. amount of books
+    facet: ["type(book)", "language(ger)"],
+    count: 19429,
     log: true
   })
+  .then().catch(err => console.log(err));
 ```
 
 ## Data
-The data that got back frmo the API wasn't clean. So, first I wrote some functions to clear the data. 
-
-There are some results that do not have a title. In that case, when the title is ``undefined``, 'Unknown' must be used. 
-Also, extra spaces are removed and the title is split whenever a certain punctuation shows up.
-``` javascript 
-// clean up string title of books
-const cleanTitle = data => {
-  const getTitle =
-    typeof data.titles.title.$t === "undefined"
-      ? "Unknown"
-      : data.titles.title.$t;
-  return getTitle.split(/[:,/]/)[0].trim();
-};
-```
-This process also happens with the author of the book and year of publication.
-``` javascript
-// clean up string of author
-const cleanAuthor = data => {
-  const getAuthor =
-    typeof data.authors === "undefined" ||
-    typeof data.authors["main-author"] === "undefined"
-      ? "Unknown"
-      : data.authors["main-author"].$t;
-  return getAuthor.split(/[/]/)[0].trim();
-};
-
-// clean up unknown years
-const cleanYear = data => {
-  const getYear =
-    typeof data.publication === "undefined" ||
-    typeof data.publication.year === "undefined" ||
-    typeof data.publication.year.$t === "undefined"
-      ? "Unknown"
-      : data.publication.year.$t;
-  return getYear;
-};
+The data that returned from the API request wasn't clean. So, first I wrote some methods to clean up the data. These methods were intended to extract specific data from the large database that the OBA offered.
+After all these methods were executed, I had a big JSON file which contains this data:
+``` json
+[
+ {
+  "title": "Der Jaguar",
+  "author": "Scherling, Theo",
+  "year": "2088"
+ },
+ {
+  "title": "Mein schwules Auge",
+  "author": "R. Hopf",
+  "year": "2018"
+ },
+ {
+  "title": "Unter MÃ¤nnern",
+  "author": "Florian Mildenberger",
+  "year": "2018"
+ },
+ {
+  "title": "Olga",
+  "author": "Schlink, Bernhard",
+  "year": "2018"
+ },
+ ...
+]
 ```
 
-After all, this cleaned up data will return and with data a JSON file will be written.
-``` javascript
-.then(items => {
-    const listOfResults = items.map(books => getBookObject(books));
-    fs.writeFileSync(
-      "data/data-oba.json",
-      JSON.stringify(listOfResults, null, 1),
-      "utf8"
-    );
-})
-```
+If you want to read more about these methods, please read the chapter in the [Wiki](https://github.com/peppequint/frontend-data/wiki/Data) about the data.
 
 ## D3
-With the [D3](https://d3js.org/) library I am able to make a dynamic presentation of the data that I got from the public library of Amsterdam. I will explain what aspects I have used from D3. For specific information how certain D3 functions work and what it did with my data can be found in the Wiki (also linked in the paragraphs).
+With the [D3](https://d3js.org/) library I am able to make a dynamic presentation of the data that I got from the public library of Amsterdam. I will explain what aspects I have used from D3. For specific information how certain D3 methods work and what it did with my data can be found in the [Wiki](https://github.com/peppequint/frontend-data/wiki/D3).
 
-### d3.nest()
-
-### d3.enter()
-
-### d3.update()
-
-### d3.exit()
-
-### D3 inspiration
 
 ## Sources
 - [Wrapper Maanlamp](https://github.com/maanlamp/node-oba-api-wrapper)
 - [Learn JS Data](http://learnjsdata.com/group_data.html)
+- [d3.ascending()](https://observablehq.com/@d3/d3-ascending)
+- [Donut Chart](https://www.d3-graph-gallery.com/graph/donut_basic.html)
 - [Rising Stack](https://blog.risingstack.com/d3-js-tutorial-bar-charts-with-javascript/)
+- [General update pattern](https://www.youtube.com/watch?v=IyIAR65G-GQ)
+- [Hover arc](https://stackoverflow.com/questions/30816709/how-to-increase-size-of-pie-segment-on-hover-in-d3)
+- [Label donut chart](https://travishorn.com/self-contained-d3-pie-chart-function-e5b7422be676)
 
 ## Credits
 - [Joost Flick](https://github.com/joostflick)
