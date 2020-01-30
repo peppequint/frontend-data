@@ -97437,7 +97437,7 @@ const drawArcs = data => {
   arc
     .append('path')
     .attr('d', arcProps(125, radius))
-    .attr('fill', d => color(d.data.key))
+    .attr('fill', d => color(d.data.value))
     .attr('opacity', '0.25')
     .on('mouseover', function(d) {
       d3.select(this)
