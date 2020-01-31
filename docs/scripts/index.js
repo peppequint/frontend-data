@@ -11,8 +11,8 @@ const t = d3.transition().duration(200);
 const x = d3.scaleBand().padding(0.2);
 const y = d3.scaleLinear();
 
-const height = 800 - margin;
-const width = 1000 - margin;
+const height = 600 - margin;
+const width = 800 - margin;
 
 const size = (width / 2) * 1.25;
 
